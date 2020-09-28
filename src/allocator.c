@@ -3,12 +3,8 @@
 int main(int argc, char** argv) {
     const char* file_name;
     const char* allocator;
-    int offset = 0;
-    int step_counter = 0;
     List* allocMBList;
     List* freedMBList;
-
-
 
     if(argc != NUMBER_ARGUMENTS) {
         fprintf(stderr, "Error! Usage:\n\t%s <data file> <allocator>\n", argv[0]);
@@ -52,7 +48,6 @@ Boolean load_data(const char* data_file_name, int max_lines, const char* allocat
     char* token = NULL;
     int lines_read = 0;
     char input_name[NAME_LENGTH + EXTRA_SPACES];
-    size_t wsize;
 
     if(data_file_name == NULL) {
         return FALSE;
@@ -112,17 +107,16 @@ void run_allocator_algorithm(const char* allocator, const char* name) {
     }
 }
 
-void first_fit(const char* name) {
+Node* first_fit(const char* name) {
     void* request; 
+    Node* node;
     size_t name_size = strlen(name) + 1;
-    printf("SIZE: %d\n", name_size);
-    printf("RUNNING FIRST FIT\n");
-    
+    printf("RUNNING FIRST FIT\n");    
     request = sbrk(name_size);
-    printf("REQUEST 1: %p\n", request);
-    strcpy((char *)request, name);
-    printf("REQUEST 2: %s\n", (char*)request);
-    /*node = create_node();*/
+    strcpy((char*)request, name);
+    node = create_node(request, name_size, (char*)request);
+    printf("START ADD: %p | SIZE: %d | CONTENT: %s\n", node -> starting_address, node -> size, node -> content);
+    return node;
 }
 
 void best_fit(const char* name) {

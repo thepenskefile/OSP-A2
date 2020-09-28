@@ -47,7 +47,7 @@ Boolean add_to_list(List *list, Node *node, Boolean add_to_end) {
     return TRUE;
 }
 
-Node* create_node(int starting_address, int size, char* content) {
+Node* create_node(void* starting_address, int size, char* content) {
     Node *node = (Node*)malloc(sizeof(Node));
     if(node == NULL) {
         printf("\n Node creation failed \n");

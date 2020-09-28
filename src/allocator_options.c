@@ -1,3 +1,4 @@
+/*
 #include "allocator_options.h"
 
 long load_data_old(const char* data_file_name, long offset, int max_lines, Step step, List* allocMBList, List* freedMBList) {
@@ -48,4 +49,4 @@ long load_data_old(const char* data_file_name, long offset, int max_lines, Step 
    return FALSE;
 }
 
-
+*/
