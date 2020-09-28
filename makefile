@@ -6,7 +6,7 @@ EXE := $(BIN_DIR)/allocator
 SRC := $(wildcard $(SRC_DIR)/*.c)
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 DEBUG=-g
-FLAGS=-ansi -pedantic -w -Wall -Wextra $(DEBUG)
+FLAGS=-Wall $(DEBUG)
 
 all:
 	gcc $(FLAGS) -o $(EXE) $(SRC)
