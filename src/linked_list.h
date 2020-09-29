@@ -4,7 +4,8 @@
 #include "utility.h"
 
 typedef struct node {
-    void* starting_address;
+    void* start_address;
+    void* end_address;
     int size;
     char* content;
     struct node *next;
@@ -12,9 +13,10 @@ typedef struct node {
 
 typedef struct list {
     struct node* head;
+    int count;
 } List;
 
-Node* create_node(void* starting_address, int size, char* content);
+Node* create_node(void* start_address,  void* end_address, int size, char* content);
 Boolean add_to_list(List *list, Node *node, Boolean add_to_end);
 List* create_list();
 

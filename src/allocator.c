@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     
     printf("ALLOCATOR: %s\n", allocator);
     printf("DATA FILE NAME: %s\n", file_name);
-    load_data(file_name, 3, allocator, allocMBList, freedMBList);
+    load_data(file_name, 4, allocator, allocMBList, freedMBList);
     
     /*
     while((offset = load_data(file_name, offset, 3, step_counter % 2, allocMBList, freedMBList)) != FALSE) {
@@ -81,10 +81,14 @@ Boolean load_data(const char* data_file_name, int max_lines, const char* allocat
         lines_read++;
         printf("LINE: %s\n", token);
 
-        run_allocator_algorithm(allocator, token);
+        run_allocator_algorithm(allocator, token, allocMBList, freedMBList);
         if(lines_read >= max_lines) {
             lines_read = 0;
             printf("DELETE\n");
+            random_delete(allocMBList, freedMBList, 2);
+            printf("FINISH DELETE\n");
+            merge_consecutive_blocks(freedMBList);
+            printf("FINISH MERGE\n");
         }
     }
 
@@ -95,34 +99,138 @@ Boolean load_data(const char* data_file_name, int max_lines, const char* allocat
 
 }
 
-void run_allocator_algorithm(const char* allocator, const char* name) {
+void run_allocator_algorithm(const char* allocator, const char* name, List* allocMBList, List* freedMBList) {
     if(strcmp(allocator, FIRST_FIT) == 0) {
-        first_fit(name);
+        first_fit(name, allocMBList, freedMBList);
     }
     else if(strcmp(allocator, BEST_FIT) == 0) {
-        best_fit(name);
+        best_fit(name, allocMBList, freedMBList);
     }
     else if(strcmp(allocator, WORST_FIT) == 0) {
-        worst_fit(name);
+        worst_fit(name, allocMBList, freedMBList);
     }
 }
 
-Node* first_fit(const char* name) {
+Node* first_fit(const char* name, List* allocMBList, List* freedMBList) {
     void* request; 
-    Node* node;
+    Node* node = NULL;
+    Node* pointer = NULL;
     size_t name_size = strlen(name) + 1;
-    printf("RUNNING FIRST FIT\n");    
+
     request = sbrk(name_size);
     strcpy((char*)request, name);
-    node = create_node(request, name_size, (char*)request);
-    printf("START ADD: %p | SIZE: %d | CONTENT: %s\n", node -> starting_address, node -> size, node -> content);
+
+    if(freedMBList -> head == NULL) {
+        node = create_node(request, (char*)request + 1, name_size, (char*)request);
+        /*
+        printf("START ADD: %p | SIZE: %d | CONTENT: %s\n", node -> start_address, node -> size, node -> content);
+        */
+        add_to_list(allocMBList, node, TRUE);        
+    }
+    else {
+        pointer = freedMBList -> head;
+        while(pointer != NULL) {
+            if(pointer -> size >= name_size) {
+                pointer -> content = (char*)request;
+                break;
+            }
+            pointer = pointer -> next;
+        }
+    }
     return node;
 }
 
-void best_fit(const char* name) {
+void best_fit(const char* name, List* allocMBList, List* freedMBList) {
     printf("RUNNING BEST FIT\n");
 }
 
-void worst_fit(const char* name) {
+void worst_fit(const char* name, List* allocMBList, List* freedMBList) {
     printf("RUNNING WORST FIT\n");
+}
+
+void merge_consecutive_blocks(List* list) {
+    Node* pointer = NULL;
+    Node* compare = NULL;
+
+    pointer = list -> head;
+    while(pointer != NULL) {
+        compare = pointer -> next;
+        while(compare != NULL) {
+            
+            if(pointer -> end_address == compare -> start_address) {
+                pointer -> size = pointer -> size + compare -> size;
+                pointer -> end_address = compare -> end_address;
+                pointer -> next = compare -> next;
+                free(compare);
+                compare = pointer -> next;
+            }
+            else {
+               compare = compare -> next;  
+            }            
+        }
+
+        pointer = pointer -> next;
+
+        /*
+        if(previous -> content == NULL && pointer -> content == NULL) {
+            previous -> size = previous -> size + pointer -> size;
+            previous -> next = pointer -> next;
+            free(pointer);
+            pointer = previous;
+            previous = NULL;
+        } else {
+            previous = pointer;
+            pointer = pointer -> next;
+        }
+        */
+
+    }
+}
+
+void random_delete(List* allocMBList, List* freedMBList, int number) {
+    int i;
+    int j;
+    int node_number;
+    Node* node = NULL;
+    Node* previous = NULL;
+
+    printf("1\n");
+    for (i = 0; i < number; i++){
+        printf("WTF: %d\n", allocMBList -> count);
+        if(allocMBList -> count == 0) {
+            break;
+        }
+        if(allocMBList -> count == 1) {
+            node_number = 1;
+        }
+        else {
+            node_number = (rand() % (allocMBList -> count - 1));
+        }        
+        printf("WTF2\n");
+        node = allocMBList -> head;
+        printf("WTF3\n");
+        printf("2: %d\n", node_number);
+        if(node_number != 0) {
+            printf("IF\n");
+            for(j = 0; j < node_number - 1; j++) {
+                printf("FOR: %d\n", j);
+                previous = node;
+                node = node -> next;
+            }
+        }
+        printf("3\n");
+        node -> content = NULL;
+        if(previous == NULL) {
+            allocMBList -> head = node -> next;
+        }
+        else {
+            previous -> next = node -> next;
+        }
+        printf("4\n");
+        node -> next = NULL;
+        allocMBList -> count = allocMBList -> count - 1;
+        printf("5\n");
+        add_to_list(freedMBList, node, TRUE);
+        printf("6\n");
+    }    
 }

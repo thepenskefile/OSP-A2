@@ -8,6 +8,7 @@ List* create_list() {
     }
 
     list -> head = NULL;
+    list -> count = 0;
 
     return list;
 }
@@ -44,19 +45,38 @@ Boolean add_to_list(List *list, Node *node, Boolean add_to_end) {
             list -> head = node;   
         }        
     }
+    list -> count = list -> count + 1;
     return TRUE;
 }
 
-Node* create_node(void* starting_address, int size, char* content) {
+Node* create_node(void* start_address, void* end_address, int size, char* content) {
     Node *node = (Node*)malloc(sizeof(Node));
     if(node == NULL) {
         printf("\n Node creation failed \n");
         return NULL;
     }
-    node -> starting_address = starting_address;
+    node -> start_address = start_address;
+    node -> end_address = end_address;
     node -> size = size;
     node -> content = content;
     node -> next = NULL;
 
     return node;
 }
+
+/*
+void print_list(List* list) {
+    Node* print_pointer;
+
+    print_pointer = list -> head;
+    while(print_pointer != NULL) {
+        printf(
+            "Start add: %p | End add: %f | Turnaround time: %f \n", 
+            print_pointer -> id,
+            print_pointer -> waiting_time,
+            calculate_turnaround_time(print_pointer)
+        );
+        print_pointer = print_pointer -> next;
+    }
+}
+*/
