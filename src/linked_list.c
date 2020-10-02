@@ -64,19 +64,19 @@ Node* create_node(void* start_address, void* end_address, int size, char* conten
     return node;
 }
 
-/*
+
 void print_list(List* list) {
     Node* print_pointer;
 
     print_pointer = list -> head;
     while(print_pointer != NULL) {
         printf(
-            "Start add: %p | End add: %f | Turnaround time: %f \n", 
-            print_pointer -> id,
-            print_pointer -> waiting_time,
-            calculate_turnaround_time(print_pointer)
+            "Start add: %p | End add: %p | Content: %s | Size: %d\n", 
+            print_pointer -> start_address,
+            print_pointer -> end_address,
+            print_pointer -> content,
+            print_pointer -> size
         );
         print_pointer = print_pointer -> next;
     }
 }
-*/
