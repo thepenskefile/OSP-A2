@@ -13,7 +13,7 @@ List* create_list() {
     return list;
 }
 
-Boolean add_to_list(List *list, Node *node, Boolean add_to_end) {
+Boolean add_to_list(List* list, Node* node, Boolean add_to_end) {
     Node* pointer = NULL;
     /* If a list does not exist, a node cannot be added to it */
     if(list == NULL) {
@@ -25,6 +25,12 @@ Boolean add_to_list(List *list, Node *node, Boolean add_to_end) {
         printf("\n Node does not exist \n");
         return FALSE;
     }
+    /*
+    if(list -> head != NULL) {
+        printf("ADDING TO HEAD: %s\n", list -> head -> content);
+    }
+    */
+    
     /* If this is the first item being added to the list */
     if(list -> head == NULL) {
         list -> head = node;

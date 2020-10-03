@@ -37,7 +37,10 @@ int main(int argc, char** argv) {
         step_counter++;
     }
     */
-    
+    printf("FREED MB\n");
+    print_list(freedMBList);
+    printf("ALLOC MB\n");
+    print_list(allocMBList);   
 
     return EXIT_SUCCESS;
 }
@@ -82,21 +85,17 @@ Boolean load_data(const char* data_file_name, int max_lines, const char* allocat
         lines_read++;
         printf("LINE: %s\n", token);
         run_allocator_algorithm(allocator, token, allocMBList, freedMBList, is_first_run);
-
-        printf("FREED MB\n");
-        print_list(freedMBList);
-        printf("ALLOC MB\n");
-        print_list(allocMBList);        
+             
         if(lines_read >= max_lines) {
             lines_read = 0;
             printf("DELETE\n");
             random_delete(allocMBList, freedMBList, 2);
+            /*
             merge_consecutive_blocks(freedMBList);
+            */
             is_first_run = FALSE;
-            printf("FREED MB\n");
-            print_list(freedMBList);
-            printf("ALLOC MB\n");
-            print_list(allocMBList); 
+            
+           
         }
     }
 
@@ -136,7 +135,7 @@ Node* first_fit(const char* name, List* allocMBList, List* freedMBList, Boolean 
         */
         add_to_list(allocMBList, node, TRUE);
     }
-    else {
+    else {        
         pointer = freedMBList -> head;
         while(pointer != NULL) {
             if(pointer -> size >= name_size && pointer -> content == NULL) {
@@ -147,10 +146,22 @@ Node* first_fit(const char* name, List* allocMBList, List* freedMBList, Boolean 
             pointer = pointer -> next;
         }
         if(found_block == FALSE) {
+            /*
+            printf("FREED MB2\n");
+            print_list(freedMBList);
+            */
+            
             node = create_node(request, (char*)request + 1, name_size, (char*)request);
+            /*
+            printf("FREED MB3\n");
+            print_list(freedMBList);
+            */
             add_to_list(allocMBList, node, TRUE);
-        }
+            
+            
+        }        
     }
+    
     return node;
 }
 
@@ -169,18 +180,23 @@ void merge_consecutive_blocks(List* list) {
     pointer = list -> head;
     while(pointer != NULL) {
         compare = pointer -> next;
-        while(compare != NULL) {
-            
-            if(pointer -> end_address == compare -> start_address) {
-                pointer -> size = pointer -> size + compare -> size;
-                pointer -> end_address = compare -> end_address;
-                pointer -> next = compare -> next;
-                free(compare);
-                compare = pointer -> next;
+        while(compare != NULL) {           
+            if(compare -> content == NULL && pointer -> content == NULL) {
+                if(pointer -> end_address == compare -> start_address) {
+                    printf("MERGING\n");
+                    pointer -> size = pointer -> size + compare -> size;
+                    pointer -> end_address = compare -> end_address;
+                    pointer -> next = compare -> next;
+                    free(compare);
+                    compare = pointer -> next;
+                }
+                else {
+                    compare = compare -> next;  
+                }  
             }
             else {
-               compare = compare -> next;  
-            }            
+                compare = compare -> next;  
+            }                    
         }
 
         pointer = pointer -> next;
@@ -209,29 +225,20 @@ void random_delete(List* allocMBList, List* freedMBList, int number) {
     Node* previous = NULL;
 
     for (i = 0; i < number; i++){
+        previous = NULL;
         if(allocMBList -> count == 0) {
             break;
         }
-        /*
-        if(allocMBList -> count == 1) {
-            node_number = 0;
-        }
-        */
         else {
             node_number = rand() % allocMBList -> count;
-            /*
-            node_number = (rand() % (allocMBList -> count - 1));
-            */
         }
-        printf("NODE NUM: %d\n", node_number); 
         node = allocMBList -> head;
-        if(node_number != 0) {
-            for(j = 0; j < node_number; j++) {
-                previous = node;
-                node = node -> next;
-            }
+         
+        for(j = 0; j < node_number; j++) {
+            previous = node;
+            node = node -> next;
         }
-        printf("DELETING: %s\n", node -> content);
+        
         node -> content = NULL;
         if(previous == NULL) {
             allocMBList -> head = node -> next;
