@@ -127,18 +127,35 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     else {        
         pointer = allocator -> freedMBList -> head;
         while(pointer != NULL) {
+            split = NULL;
             /* Search in freedMBList for an available block of equal or greater size */
-            if(pointer -> size >= name_size && pointer -> content == NULL) {
-                /*
+            if(pointer -> size >= name_size && pointer -> content == NULL) {                
                 if(pointer -> size > name_size) {
+                    /*
                     split -> start_address = pointer -> start_address + name_size;
                     split -> end_address = pointer -> end_address;
                     split -> next = pointer -> next;
+                    */
+                    
+                    printf("BEFORE END: %p\n", pointer -> end_address);
                     pointer -> end_address = pointer -> start_address + name_size;
-                    split = (Node*)split -> start_address;
-                    pointer -> next = split;    
+                    printf("AFTER END: %p\n", pointer -> end_address);                    
+                    split = create_node(pointer -> end_address + 1, (pointer -> end_address + 1) + (pointer -> size - name_size), pointer -> size - name_size, NULL);
+                    
+                    /*
+                    split = (Node*)pointer -> end_address + 1;
+                    */
+                             
+                    split -> start_address = pointer -> end_address + 1;                    
+                    split -> end_address = split -> start_address + (pointer -> size - name_size);                    
+                    split -> size = pointer -> size - name_size;                    
+                    pointer -> size = name_size;
+                    
+                    split -> next = pointer -> next;
+                    pointer -> next = split;
+                    
+                    
                 }
-                */
                 /* Add name to block content */
                 pointer -> content = (char*)request;
                 found_block = TRUE;
