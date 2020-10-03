@@ -122,6 +122,8 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
 
     if(is_first_run) {
         node = create_node(request, (char*)request + name_size, name_size, (char*)request);
+        printf("NEW NODE %p\n", node);
+        printf("START ADD: %p\n", request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
     else {        
@@ -140,11 +142,9 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
                     printf("BEFORE END: %p\n", pointer -> end_address);
                     pointer -> end_address = pointer -> start_address + name_size;
                     printf("AFTER END: %p\n", pointer -> end_address);                    
-                    split = create_node(pointer -> end_address + 1, (pointer -> end_address + 1) + (pointer -> size - name_size), pointer -> size - name_size, NULL);
+                    split = create_node(pointer -> end_address + 1, (pointer -> end_address + 1) + (pointer -> size - name_size), pointer -> size - name_size, NULL);                    
                     
-                    /*
-                    split = (Node*)pointer -> end_address + 1;
-                    */
+                    split -> content = (char*)pointer -> end_address + 1;                    
                              
                     split -> start_address = pointer -> end_address + 1;                    
                     split -> end_address = split -> start_address + (pointer -> size - name_size);                    
