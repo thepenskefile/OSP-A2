@@ -128,19 +128,14 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
         node = create_node(request, (char*)request + name_size, name_size, (char*)request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
-    else {        
+    else {
         pointer = allocator -> freedMBList -> head;
         while(pointer != NULL) {
             split = NULL;
             /* Search in freedMBList for an available block of equal or greater size */
-            if(pointer -> size >= name_size && pointer -> content == NULL) {                
-                if(pointer -> size > name_size) {
-                    /*
-                    split -> start_address = pointer -> start_address + name_size;
-                    split -> end_address = pointer -> end_address;
-                    split -> next = pointer -> next;
-                    */
-                    
+            if(pointer -> size >= name_size && pointer -> content == NULL) {     
+                /* Split the block if it is greater than the content size */           
+                if(pointer -> size > name_size) {                    
                     pointer -> end_address = pointer -> start_address + name_size;
                     split = create_node(pointer -> end_address + 1, (pointer -> end_address + 1) + (pointer -> size - name_size), pointer -> size - name_size, NULL);                    
                     
@@ -153,8 +148,6 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
                     
                     split -> next = pointer -> next;
                     pointer -> next = split;
-                    
-                    
                 }
                 /* Add name to block content */
                 pointer -> content = (char*)request;
@@ -177,8 +170,7 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             /*
             printf("FREED MB2\n");
             print_list(freedMBList);
-            */
-            
+            */            
             node = create_node(request, (char*)request + 1, name_size, (char*)request);
             /*
             printf("FREED MB3\n");
@@ -186,15 +178,84 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             */
             add_to_list(allocator -> allocMBList, node, TRUE);
             
-            
         }        
     }
     
-    return node;
+    return pointer;
 }
 
-void best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
+Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     printf("RUNNING BEST FIT\n");
+    void* request; 
+    Node* node = NULL;
+    Node* previous = NULL;
+    Node* split = NULL;
+    Node* best_fit = NULL;
+    Node* best_fit_previous = NULL;
+    size_t name_size = strlen(name) + 1;
+    Boolean found_block = FALSE;
+
+    request = sbrk(name_size);
+    strcpy((char*)request, name);
+
+    if(is_first_run) {
+        node = create_node(request, (char*)request + name_size, name_size, (char*)request);
+        add_to_list(allocator -> allocMBList, node, TRUE);
+    }
+    else {
+        node = allocator -> freedMBList -> head;
+        while(node != NULL) {
+            if(node -> size >= name_size && (node -> size - name_size <= best_fit -> size)) {
+                best_fit = node;
+                best_fit_previous = previous;
+                found_block = TRUE;
+            }
+            previous = node;
+            node = node -> next;
+        }
+        if(found_block == TRUE) {
+            if(best_fit -> size > name_size) {
+                best_fit -> end_address = best_fit -> start_address + name_size;
+                split = create_node(best_fit -> end_address + 1, (best_fit -> end_address + 1) + (best_fit -> size - name_size), best_fit -> size - name_size, NULL);                    
+                
+                split -> content = (char*)best_fit -> end_address + 1;
+
+                split -> start_address = best_fit -> end_address + 1;                    
+                split -> end_address = split -> start_address + (best_fit -> size - name_size);                    
+                split -> size = best_fit -> size - name_size;                    
+                best_fit -> size = name_size;
+
+                split -> next = node -> next;
+                node -> next = split;
+            }
+
+            /* Add name to block content */
+            best_fit -> content = (char*)request;
+            /* Move node from freedMBList to allocMBList */
+            if(best_fit_previous == NULL) {
+                allocator -> freedMBList -> head = best_fit -> next;
+            }
+            else {
+                best_fit_previous -> next = best_fit -> next;
+            }
+            best_fit -> next = NULL;
+            add_to_list(allocator -> allocMBList, best_fit, TRUE);
+        }
+        if(found_block == FALSE) {
+            /*
+            printf("FREED MB2\n");
+            print_list(freedMBList);
+            */            
+            node = create_node(request, (char*)request + 1, name_size, (char*)request);
+            /*
+            printf("FREED MB3\n");
+            print_list(freedMBList);
+            */
+            add_to_list(allocator -> allocMBList, node, TRUE);
+            
+        }
+    }
+    return node;
 }
 
 void worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
