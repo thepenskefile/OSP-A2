@@ -43,10 +43,12 @@ int main(int argc, char** argv) {
         step_counter++;
     }
     */
+
+    printf("ALLOC MB\n");
+    print_list(allocator -> allocMBList);
     printf("FREED MB\n");
     print_list(allocator -> freedMBList);
-    printf("ALLOC MB\n");
-    print_list(allocator -> allocMBList);   
+    printf("FREED MB COUNT: %d\n", allocator -> freedMBList -> count);
 
     return EXIT_SUCCESS;
 }
@@ -73,10 +75,12 @@ Boolean load_data(const char* data_file_name, int max_lines, Allocator* allocato
         lines_read++;
         printf("LINE: %s\n", token);
         run_allocator_algorithm(allocator, token, is_first_run);
+        /*
         printf("FREED MB\n");
         print_list(allocator -> freedMBList);
         printf("ALLOC MB\n");
         print_list(allocator -> allocMBList);  
+        */
         if(lines_read >= max_lines) {
             lines_read = 0;
             printf("DELETE\n");
@@ -122,8 +126,6 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
 
     if(is_first_run) {
         node = create_node(request, (char*)request + name_size, name_size, (char*)request);
-        printf("NEW NODE %p\n", node);
-        printf("START ADD: %p\n", request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
     else {        
@@ -139,9 +141,7 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
                     split -> next = pointer -> next;
                     */
                     
-                    printf("BEFORE END: %p\n", pointer -> end_address);
                     pointer -> end_address = pointer -> start_address + name_size;
-                    printf("AFTER END: %p\n", pointer -> end_address);                    
                     split = create_node(pointer -> end_address + 1, (pointer -> end_address + 1) + (pointer -> size - name_size), pointer -> size - name_size, NULL);                    
                     
                     split -> content = (char*)pointer -> end_address + 1;                    
@@ -276,11 +276,13 @@ void random_delete(List* allocMBList, List* freedMBList, int number) {
         }
         node -> next = NULL;
         allocMBList -> count = allocMBList -> count - 1;
+        /*
         add_to_list(freedMBList, node, TRUE);
         printf("FREED MB\n");
         print_list(freedMBList);
         printf("ALLOC MB\n");
         print_list(allocMBList);  
+        */
     }    
 }
 
