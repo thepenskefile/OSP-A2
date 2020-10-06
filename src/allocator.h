@@ -17,6 +17,8 @@
 #define WF "wf"
 
 #define NUMBER_ARGUMENTS 3
+#define NAMES_TO_READ 1000
+#define NAMES_TO_DELETE 500
 
 typedef enum {
     FIRST_FIT,
