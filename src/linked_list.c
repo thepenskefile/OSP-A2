@@ -55,6 +55,33 @@ Boolean add_to_list(List* list, Node* node, Boolean add_to_end) {
     return TRUE;
 }
 
+List* remove_at_index(List* list, Node* node, int index) {
+    Node* pointer = NULL;
+    Node* previous = NULL;
+    Node* remove = NULL;
+    int i = 0;
+
+    pointer = list -> head;
+    while(pointer != NULL) {
+        if(i == index) {
+            remove = pointer;
+            if(previous == NULL) {
+                list -> head = pointer -> next;
+            }
+            else {
+                previous -> next = pointer -> next;
+            }
+            free(remove);
+            list -> count = list -> count - 1;
+            break;
+        }
+        previous = pointer;
+        pointer = pointer -> next;
+        i++;
+    }
+    return list;
+}
+
 Node* create_node(void* start_address, void* end_address, int size, char* content) {
     Node *node = (Node*)malloc(sizeof(Node));
     if(node == NULL) {
@@ -69,7 +96,6 @@ Node* create_node(void* start_address, void* end_address, int size, char* conten
 
     return node;
 }
-
 
 void print_list(List* list) {
     Node* print_pointer;

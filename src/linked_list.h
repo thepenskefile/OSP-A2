@@ -18,6 +18,7 @@ typedef struct list {
 
 Node* create_node(void* start_address,  void* end_address, int size, char* content);
 Boolean add_to_list(List *list, Node *node, Boolean add_to_end);
+List* remove_at_index(List* list, Node* node, int index);
 List* create_list();
 void print_list(List* list);
 #endif

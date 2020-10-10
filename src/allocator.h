@@ -33,7 +33,7 @@ typedef struct allocator {
     Strategy strategy;
 } Allocator;
 
-
+void print_results(List* list);
 Boolean load_data(const char* data_file_name, int max_lines, Allocator* allocator);
 void run_allocator_algorithm(Allocator* allocator, const char* name, Boolean is_first_run);
 Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run);
