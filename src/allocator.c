@@ -264,7 +264,7 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
         node = allocator -> freedMBList -> head;
         while(node != NULL) {
             if(node -> size >= name_size && node -> content == NULL) {
-                if(best_fit != NULL && (node -> size - name_size <= best_fit -> size)) {
+                if(best_fit != NULL && (node -> size - name_size <= best_fit -> size - name_size)) {
                     best_fit = node;
                     best_fit_previous = previous;
                     found_block = TRUE;
@@ -321,8 +321,73 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     return node;
 }
 
-void worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
-    printf("RUNNING WORST FIT\n");
+Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
+    void* request; 
+    Node* node = NULL;
+    Node* previous = NULL;
+    Node* split = NULL;
+    Node* worst_fit = NULL;
+    Node* worst_fit_previous = NULL;
+    size_t name_size = strlen(name) + 1;
+    Boolean found_block = FALSE;
+
+    request = sbrk(name_size);
+    strcpy((char*)request, name);
+    if(is_first_run) {
+        node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
+        add_to_list(allocator -> allocMBList, node, TRUE);
+    }
+    else {
+        node = allocator -> freedMBList -> head;
+        while(node != NULL) {
+            if(node -> size >= name_size && node -> content == NULL) {
+                if(worst_fit != NULL && (node -> size - name_size >= worst_fit -> size - name_size)) {
+                    worst_fit = node;
+                    worst_fit_previous = previous;
+                    found_block = TRUE;
+                }
+                else if(worst_fit == NULL) {
+                    worst_fit = node;
+                    worst_fit_previous = previous;
+                    found_block = TRUE;
+                }
+            }
+            previous = node;
+            node = node -> next;
+        }
+        if(found_block == TRUE) {
+            if(worst_fit -> size > name_size) {              
+                worst_fit -> end_address = worst_fit -> start_address + name_size - 1;
+                split = create_node(worst_fit -> end_address, worst_fit -> end_address + (worst_fit -> size - name_size), worst_fit -> size - name_size, NULL);                    
+                split -> content = (char*)worst_fit -> end_address;
+                split -> content = NULL;
+                    
+                worst_fit -> size = name_size;
+                split -> next = worst_fit -> next;
+                worst_fit -> next = split;
+            }
+            /* Add name to block content */
+            worst_fit -> content = (char*)request;
+            /* Move node from freedMBList to allocMBList */
+            if(worst_fit_previous == NULL) {
+                allocator -> freedMBList -> head = worst_fit -> next;
+            }
+            else {
+                worst_fit_previous -> next = worst_fit -> next;
+            }
+            if(split == NULL) {
+                allocator -> freedMBList -> count = allocator -> freedMBList -> count - 1;
+            }
+            worst_fit -> next = NULL;
+            add_to_list(allocator -> allocMBList, worst_fit, TRUE);
+        }
+        if(found_block == FALSE) {       
+            node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
+            add_to_list(allocator -> allocMBList, node, TRUE);
+            
+        }
+    }
+    return node;
 }
 
 void merge_consecutive_blocks(List* list) {

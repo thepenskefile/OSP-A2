@@ -38,7 +38,7 @@ Boolean load_data(const char* data_file_name, int max_lines, Allocator* allocato
 void run_allocator_algorithm(Allocator* allocator, const char* name, Boolean is_first_run);
 Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run);
 Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run);
-void worst_fit(const char* name, Allocator* allocator, Boolean is_first_run);
+Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run);
 void merge_consecutive_blocks(List* list);
 void random_delete(List* allocMBList, List* freedMBList, int number);
 Allocator* create_allocator();
