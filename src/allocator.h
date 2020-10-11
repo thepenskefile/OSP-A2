@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/queue.h>
 #include <unistd.h>
 #include <math.h>
+#include <time.h>
 
 #include "utility.h"
 #include "linked_list.h"

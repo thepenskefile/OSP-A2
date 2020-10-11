@@ -58,20 +58,17 @@ Boolean add_to_list(List* list, Node* node, Boolean add_to_end) {
 List* remove_at_index(List* list, Node* node, int index) {
     Node* pointer = NULL;
     Node* previous = NULL;
-    Node* remove = NULL;
     int i = 0;
 
     pointer = list -> head;
     while(pointer != NULL) {
         if(i == index) {
-            remove = pointer;
             if(previous == NULL) {
                 list -> head = pointer -> next;
             }
             else {
                 previous -> next = pointer -> next;
             }
-            free(remove);
             list -> count = list -> count - 1;
             break;
         }
@@ -80,6 +77,42 @@ List* remove_at_index(List* list, Node* node, int index) {
         i++;
     }
     return list;
+}
+
+List* remove_node(List* list, Node* node) {
+    Node* pointer = NULL;
+    Node* previous = NULL;
+
+    pointer = list -> head;
+    while(pointer != NULL) {
+        if(pointer == node) {
+            if(previous == NULL) {
+                list -> head = pointer -> next;
+            }
+            else {
+                previous -> next = pointer -> next;
+            }
+            list -> count = list -> count - 1;
+            break;
+        }
+        previous = pointer;
+        pointer = pointer -> next;
+    }
+    return list;
+}
+
+Node* split_block(Node* node, int size) {
+    Node* split;
+
+    node -> end_address = node -> start_address + size - 1;
+    split = create_node(node -> end_address, node -> end_address + (node -> size - size), node -> size - size, NULL);    
+    split -> content = (char*)node -> end_address;
+    split -> content = NULL;
+    node -> size = size;    
+    split -> next = node -> next;
+    node -> next = split;
+
+    return split;
 }
 
 Node* create_node(void* start_address, void* end_address, int size, char* content) {
