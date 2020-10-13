@@ -3,15 +3,17 @@
 int main(int argc, char** argv) {
     const char* file_name;
     const char* strategy;
+    const char* output_file_name;
     Allocator* allocator;
 
     if(argc != NUMBER_ARGUMENTS) {
-        fprintf(stderr, "Error! Usage:\n\t%s <data file> <allocator>\n", argv[0]);
+        fprintf(stderr, "Error! Usage:\n\t%s <data file> <allocator strategy> <output file>\n", argv[0]);
 		exit(EXIT_FAILURE);
     }
 
     file_name = argv[1];
     strategy = argv[2];
+    output_file_name = argv[3];
 
     allocator = create_allocator();
     if(strcmp(strategy, FF) == 0) {
@@ -23,49 +25,65 @@ int main(int argc, char** argv) {
     else if(strcmp(strategy, WF) == 0) {
         allocator -> strategy = WORST_FIT;
     }
-    
-    printf("ALLOCATOR: %s\n", strategy);
-    printf("DATA FILE NAME: %s\n", file_name);
-    /*
+        
     srand(time(0));
-    */
+    
     load_data(file_name, NAMES_TO_READ, allocator);
       
-    printf("ALLOC MB\n");
-    print_list(allocator -> allocMBList);
-    printf("FREED MB\n");
+    printf("-----freedMBList-----\n\n");
     print_list(allocator -> freedMBList);
+    printf("-----allocMBList-----\n\n");;
+    print_list(allocator -> allocMBList);
+
+    printf("\n----------------------\n\n");
     
-    printf("ALLOC MB COUNT: %d\n", allocator -> allocMBList -> count);
-    printf("FREED MB COUNT: %d\n", allocator -> freedMBList -> count);
+    printf("Total nodes in freedMBList: %d\n", allocator -> freedMBList -> count);
+    printf("Total nodes in allocMBList: %d\n", allocator -> allocMBList -> count);
+    printf("Total memory allocated: %d\n", allocator -> total_allocated_memory);
     
     
-    print_results(allocator -> freedMBList);
+    print_results(allocator, output_file_name);
 
     return EXIT_SUCCESS;
 }
 
 
-void print_results(List* list) {
+void print_results(Allocator* allocator, const char* file_name) {
     FILE* results_file = NULL;
 	Node* current = NULL;
-    const char* output_file_name = "results";
 
-	results_file = fopen(output_file_name, "w");
+	results_file = fopen(file_name, "w");
 
-	current = list -> head;	
-
+    fprintf(results_file, "-----freedMBList-----\n\n");
+	current = allocator -> freedMBList -> head;
 	while(current != NULL){
         fprintf(
             results_file,
-            "Start add: %p | End add: %p | Size: %d | Content: %s\n", 
+            "Start address: %p | Size: %d \n", 
             current -> start_address,
-            current -> end_address,
+            current -> size
+        );	
+		current = current -> next;
+	}
+
+    fprintf(results_file, "\n-----allocMBList-----\n\n");
+    current = allocator -> allocMBList -> head;
+	while(current != NULL){
+        fprintf(
+            results_file,
+            "Start add: %p | Size: %d | Content: %s\n", 
+            current -> start_address,
             current -> size,
             current -> content
         );	
 		current = current->next;
 	}
+
+    fprintf(results_file, "\n---------------------------------------\n\n");
+
+    fprintf(results_file, "Total nodes in freedMBList: %d\n", allocator -> freedMBList -> count);
+    fprintf(results_file, "Total nodes in allocMBList: %d\n", allocator -> allocMBList -> count);
+    fprintf(results_file, "Total memory allocated: %d\n", allocator -> total_allocated_memory);
 
 	fclose(results_file);    
 }
@@ -89,46 +107,13 @@ Boolean load_data(const char* data_file_name, int max_lines, Allocator* allocato
 
     while(fgets(input_name, NAME_LENGTH + EXTRA_SPACES, data_file) != NULL) {
         token = strtok(input_name, "\n");
-        lines_read++;
-
-
-        printf("LINE: %s\n", token);
-        
-        
+        lines_read++;   
         run_allocator_algorithm(allocator, token, is_first_run);
-        
-        /*
-        printf("FREED MB\n");
-        print_list(allocator -> freedMBList);
-        printf("ALLOC MB\n");
-        print_list(allocator -> allocMBList);
-        */
-        
         if(lines_read >= max_lines) {
-            lines_read = 0;
-            
-            
+            lines_read = 0;            
             random_delete(allocator -> allocMBList, allocator -> freedMBList, NAMES_TO_DELETE);
-
-            /*
-            printf("FREED MB\n");
-            print_list(allocator -> freedMBList);
-            printf("ALLOC MB\n");
-            print_list(allocator -> allocMBList);
-            */
-
             merge_consecutive_blocks(allocator -> freedMBList);
-            
-            /*
-            printf("FREED MB\n");
-            print_list(allocator -> freedMBList);
-            printf("ALLOC MB\n");
-            print_list(allocator -> allocMBList);
-            */
-            
-            
-            is_first_run = FALSE;     
-           
+            is_first_run = FALSE;           
         }
     }
 
@@ -151,6 +136,13 @@ void run_allocator_algorithm(Allocator* allocator, const char* name, Boolean is_
     }
 }
 
+void* allocate_memory(Allocator* allocator, int size) {
+    void* request;
+    request = sbrk(size);
+    allocator -> total_allocated_memory = allocator -> total_allocated_memory + size;
+    return request;
+}
+
 Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     void* request; 
     Node* node = NULL;
@@ -159,9 +151,10 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     size_t name_size = strlen(name) + 1;
     Boolean found_block = FALSE;
 
-    request = sbrk(name_size);
+    request = allocate_memory(allocator, name_size);
     strcpy((char*)request, name);
 
+    /* Read the first 1000 names and add then to allocMBList */
     if(is_first_run) {
         node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
         add_to_list(allocator -> allocMBList, node, TRUE);
@@ -179,29 +172,20 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
                 /* Add name to block content */
                 pointer -> content = (char*)request;
                 found_block = TRUE;
+                /* Remove the node from freedMBList and add it to allocMBList */
                 remove_node(allocator -> freedMBList, pointer);
                 if(split != NULL) {
                     allocator -> freedMBList -> count = allocator -> freedMBList -> count + 1;
-                }
-                
+                }                
                 pointer -> next = NULL;
                 add_to_list(allocator -> allocMBList, pointer, TRUE);
                 break;
             }
             pointer = pointer -> next;
         }
-        if(found_block == FALSE) {
-            /*
-            printf("FREED MB2\n");
-            print_list(freedMBList);
-            */            
+        if(found_block == FALSE) {       
             node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
-            /*
-            printf("FREED MB3\n");
-            print_list(freedMBList);
-            */
-            add_to_list(allocator -> allocMBList, node, TRUE);
-            
+            add_to_list(allocator -> allocMBList, node, TRUE);            
         }        
     }
     
@@ -216,14 +200,17 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     size_t name_size = strlen(name) + 1;
     Boolean found_block = FALSE;
 
-    request = sbrk(name_size);
+    request = allocate_memory(allocator, name_size);
     strcpy((char*)request, name);
+
+    /* Read the first 1000 names and add then to allocMBList */
     if(is_first_run) {
         node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
     else {
         node = allocator -> freedMBList -> head;
+        /* Loop through freedMBList, keeping track of the smallest node that will fit the size of the content */
         while(node != NULL) {
             if(node -> size >= name_size && node -> content == NULL) {
                 if(best_fit != NULL && (node -> size - name_size < best_fit -> size - name_size)) {
@@ -237,6 +224,7 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             }
             node = node -> next;
         }
+        /* If an appropriate block is found in freedMBList, use it */
         if(found_block == TRUE) {
             if(best_fit -> size > name_size) {
                 split = split_block(best_fit, name_size);
@@ -251,16 +239,9 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             best_fit -> next = NULL;            
             add_to_list(allocator -> allocMBList, best_fit, TRUE);
         }
-        if(found_block == FALSE) {
-            /*
-            printf("FREED MB2\n");
-            print_list(freedMBList);
-            */            
+        /* If an appropriate block is not found in freedMBList, then create a new block and add it to allocMBList */
+        else {         
             node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
-            /*
-            printf("FREED MB3\n");
-            print_list(freedMBList);
-            */
             add_to_list(allocator -> allocMBList, node, TRUE);
             
         }
@@ -276,14 +257,17 @@ Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     size_t name_size = strlen(name) + 1;
     Boolean found_block = FALSE;
 
-    request = sbrk(name_size);
+    request = allocate_memory(allocator, name_size);
     strcpy((char*)request, name);
+
+    /* Read the first 1000 names and add then to allocMBList */
     if(is_first_run) {
         node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
     else {
         node = allocator -> freedMBList -> head;
+        /* Loop through freedMBList, keeping track of the largest node that will fit the size of the content */
         while(node != NULL) {
             if(node -> size >= name_size && node -> content == NULL) {
                 if(worst_fit != NULL && (node -> size - name_size > worst_fit -> size - name_size)) {
@@ -297,6 +281,7 @@ Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             }
             node = node -> next;
         }
+        /* If an appropriate block is found in freedMBList, use it */
         if(found_block == TRUE) {
             if(worst_fit -> size > name_size) {
                 split = split_block(worst_fit, name_size);
@@ -311,18 +296,10 @@ Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             worst_fit -> next = NULL;            
             add_to_list(allocator -> allocMBList, worst_fit, TRUE);
         }
-        if(found_block == FALSE) {
-            /*
-            printf("FREED MB2\n");
-            print_list(freedMBList);
-            */            
+        /* If an appropriate block is not found in freedMBList, then create a new block and add it to allocMBList */
+        else {          
             node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
-            /*
-            printf("FREED MB3\n");
-            print_list(freedMBList);
-            */
-            add_to_list(allocator -> allocMBList, node, TRUE);
-            
+            add_to_list(allocator -> allocMBList, node, TRUE);            
         }
     }
     return node;
@@ -341,20 +318,14 @@ void merge_consecutive_blocks(List* list) {
             if(pointer -> start_address != compare -> start_address) {
                 if(pointer -> end_address + 1 == compare -> start_address) {
                     pointer -> size = pointer -> size + compare -> size;
-                    pointer -> end_address = compare -> end_address;
-                    
+                    pointer -> end_address = compare -> end_address;                    
                     remove_node(list, compare);
-                    
-                    /*
-                    remove_at_index(list, compare, j);
-                    */
                 }
             }
             compare = compare -> next;
         }
         pointer = pointer -> next;
     }
-
 }
 
 
@@ -376,19 +347,10 @@ void random_delete(List* allocMBList, List* freedMBList, int number) {
         for(j = 0; j < node_number; j++) {
             node = node -> next;
         }
-        /*
-        printf("DELETING: %s\n", node -> content);
-        */
         node -> content = NULL;
         remove_node(allocMBList, node);
         node -> next = NULL;
         add_to_list(freedMBList, node, TRUE);
-        /*
-        printf("FREED MB\n");
-        print_list(freedMBList);
-        printf("ALLOC MB\n");
-        print_list(allocMBList);  
-        */
     }    
 }
 
@@ -399,6 +361,7 @@ Allocator* create_allocator() {
     
     allocator -> freedMBList = freedMBList = create_list();
     allocator -> allocMBList = allocMBList = create_list();
+    allocator -> total_allocated_memory = 0;
 
     return allocator;
 }

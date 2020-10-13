@@ -105,7 +105,7 @@ Node* split_block(Node* node, int size) {
     Node* split;
 
     node -> end_address = node -> start_address + size - 1;
-    split = create_node(node -> end_address, node -> end_address + (node -> size - size), node -> size - size, NULL);    
+    split = create_node(node -> end_address + 1, node -> end_address + (node -> size - size), node -> size - size, NULL);    
     split -> content = (char*)node -> end_address;
     split -> content = NULL;
     node -> size = size;    
@@ -136,11 +136,10 @@ void print_list(List* list) {
     print_pointer = list -> head;
     while(print_pointer != NULL) {
         printf(
-            "Start add: %p | End add: %p | Content: %s | Size: %d\n", 
+            "Start address: %p | Size: %d | Content: %s \n", 
             print_pointer -> start_address,
-            print_pointer -> end_address,
-            print_pointer -> content,
-            print_pointer -> size
+            print_pointer -> size,
+            print_pointer -> content
         );
         print_pointer = print_pointer -> next;
     }

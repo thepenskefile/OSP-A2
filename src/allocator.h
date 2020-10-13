@@ -16,7 +16,7 @@
 #define BF "bf"
 #define WF "wf"
 
-#define NUMBER_ARGUMENTS 3
+#define NUMBER_ARGUMENTS 4
 #define NAMES_TO_READ 1000
 #define NAMES_TO_DELETE 500
 
@@ -31,9 +31,10 @@ typedef struct allocator {
     List* allocMBList;
     List* freedMBList;
     Strategy strategy;
+    int total_allocated_memory;
 } Allocator;
 
-void print_results(List* list);
+void print_results(Allocator* allocator, const char* file_name);
 Boolean load_data(const char* data_file_name, int max_lines, Allocator* allocator);
 void run_allocator_algorithm(Allocator* allocator, const char* name, Boolean is_first_run);
 Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run);
