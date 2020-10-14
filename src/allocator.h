@@ -36,10 +36,10 @@ typedef struct allocator {
 
 void print_results(Allocator* allocator, const char* file_name);
 Boolean load_data(const char* data_file_name, int max_lines, Allocator* allocator);
-void run_allocator_algorithm(Allocator* allocator, const char* name, Boolean is_first_run);
-Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run);
-Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run);
-Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run);
+void run_allocator_algorithm(Allocator* allocator, char* name, Boolean is_first_run);
+Node* first_fit(char* name, Allocator* allocator, Boolean is_first_run);
+Node* best_fit(char* name, Allocator* allocator, Boolean is_first_run);
+Node* worst_fit(char* name, Allocator* allocator, Boolean is_first_run);
 void merge_consecutive_blocks(List* list);
 void random_delete(List* allocMBList, List* freedMBList, int number);
 Allocator* create_allocator();

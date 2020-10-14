@@ -10,11 +10,6 @@ typedef enum boolean {
     TRUE
 } Boolean;
 
-typedef enum {
-    ALLOCATE,
-    DEALLOCATE
-} Step;
-
 #define NEW_LINE_SPACE 1
 #define NULL_SPACE 1
 #define NAME_LENGTH 256

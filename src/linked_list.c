@@ -24,13 +24,7 @@ Boolean add_to_list(List* list, Node* node, Boolean add_to_end) {
     if(node == NULL) {
         printf("\n Node does not exist \n");
         return FALSE;
-    }
-    /*
-    if(list -> head != NULL) {
-        printf("ADDING TO HEAD: %s\n", list -> head -> content);
-    }
-    */
-    
+    }    
     /* If this is the first item being added to the list */
     if(list -> head == NULL) {
         list -> head = node;
@@ -53,30 +47,6 @@ Boolean add_to_list(List* list, Node* node, Boolean add_to_end) {
     }
     list -> count = list -> count + 1;
     return TRUE;
-}
-
-List* remove_at_index(List* list, Node* node, int index) {
-    Node* pointer = NULL;
-    Node* previous = NULL;
-    int i = 0;
-
-    pointer = list -> head;
-    while(pointer != NULL) {
-        if(i == index) {
-            if(previous == NULL) {
-                list -> head = pointer -> next;
-            }
-            else {
-                previous -> next = pointer -> next;
-            }
-            list -> count = list -> count - 1;
-            break;
-        }
-        previous = pointer;
-        pointer = pointer -> next;
-        i++;
-    }
-    return list;
 }
 
 List* remove_node(List* list, Node* node) {
@@ -106,7 +76,7 @@ Node* split_block(Node* node, int size) {
 
     node -> end_address = node -> start_address + size - 1;
     split = create_node(node -> end_address + 1, node -> end_address + (node -> size - size), node -> size - size, NULL);    
-    split -> content = (char*)node -> end_address;
+    split -> content = (char*)node -> end_address + 1;    
     split -> content = NULL;
     node -> size = size;    
     split -> next = node -> next;

@@ -124,7 +124,7 @@ Boolean load_data(const char* data_file_name, int max_lines, Allocator* allocato
 
 }
 
-void run_allocator_algorithm(Allocator* allocator, const char* name, Boolean is_first_run) {
+void run_allocator_algorithm(Allocator* allocator, char* name, Boolean is_first_run) {
     if(allocator -> strategy == FIRST_FIT) {
         first_fit(name, allocator, is_first_run);
     }
@@ -143,7 +143,7 @@ void* allocate_memory(Allocator* allocator, int size) {
     return request;
 }
 
-Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
+Node* first_fit(char* name, Allocator* allocator, Boolean is_first_run) {
     void* request; 
     Node* node = NULL;
     Node* pointer = NULL;
@@ -151,11 +151,10 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     size_t name_size = strlen(name) + 1;
     Boolean found_block = FALSE;
 
-    request = allocate_memory(allocator, name_size);
-    strcpy((char*)request, name);
-
     /* Read the first 1000 names and add then to allocMBList */
     if(is_first_run) {
+        request = allocate_memory(allocator, name_size);
+        strcpy((char*)request, name);
         node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
@@ -170,7 +169,8 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
                     split = split_block(pointer, name_size);
                 }
                 /* Add name to block content */
-                pointer -> content = (char*)request;
+                pointer -> content = pointer -> start_address;
+                strcpy((char*)pointer -> start_address, name);
                 found_block = TRUE;
                 /* Remove the node from freedMBList and add it to allocMBList */
                 remove_node(allocator -> freedMBList, pointer);
@@ -183,7 +183,9 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             }
             pointer = pointer -> next;
         }
-        if(found_block == FALSE) {       
+        if(found_block == FALSE) {   
+            request = allocate_memory(allocator, name_size);
+            strcpy((char*)request, name);
             node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
             add_to_list(allocator -> allocMBList, node, TRUE);            
         }        
@@ -192,7 +194,7 @@ Node* first_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     return pointer;
 }
 
-Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
+Node* best_fit(char* name, Allocator* allocator, Boolean is_first_run) {
     void* request; 
     Node* node = NULL;
     Node* split = NULL;
@@ -200,11 +202,10 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     size_t name_size = strlen(name) + 1;
     Boolean found_block = FALSE;
 
-    request = allocate_memory(allocator, name_size);
-    strcpy((char*)request, name);
-
     /* Read the first 1000 names and add then to allocMBList */
     if(is_first_run) {
+        request = allocate_memory(allocator, name_size);
+        strcpy((char*)request, name);
         node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
@@ -230,7 +231,8 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
                 split = split_block(best_fit, name_size);
             }
             /* Add name to block content */
-            best_fit -> content = (char*)request;
+            best_fit -> content = best_fit -> start_address;
+            strcpy((char*)best_fit -> start_address, name);
             /* Move node from freedMBList to allocMBList */
             remove_node(allocator -> freedMBList, best_fit);
             if(split != NULL) {
@@ -240,7 +242,9 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             add_to_list(allocator -> allocMBList, best_fit, TRUE);
         }
         /* If an appropriate block is not found in freedMBList, then create a new block and add it to allocMBList */
-        else {         
+        else {
+            request = allocate_memory(allocator, name_size);
+            strcpy((char*)request, name);
             node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
             add_to_list(allocator -> allocMBList, node, TRUE);
             
@@ -249,19 +253,18 @@ Node* best_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
     return node;
 }
 
-Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
+Node* worst_fit(char* name, Allocator* allocator, Boolean is_first_run) {
     void* request; 
     Node* node = NULL;
     Node* split = NULL;
     Node* worst_fit = NULL;
     size_t name_size = strlen(name) + 1;
-    Boolean found_block = FALSE;
-
-    request = allocate_memory(allocator, name_size);
-    strcpy((char*)request, name);
+    Boolean found_block = FALSE;    
 
     /* Read the first 1000 names and add then to allocMBList */
     if(is_first_run) {
+        request = allocate_memory(allocator, name_size);
+        strcpy((char*)request, name);
         node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
         add_to_list(allocator -> allocMBList, node, TRUE);
     }
@@ -287,7 +290,8 @@ Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
                 split = split_block(worst_fit, name_size);
             }
             /* Add name to block content */
-            worst_fit -> content = (char*)request;
+            worst_fit -> content = worst_fit -> start_address;
+            strcpy((char*)worst_fit -> start_address, name);
             /* Move node from freedMBList to allocMBList */
             remove_node(allocator -> freedMBList, worst_fit);
             if(split != NULL) {
@@ -297,7 +301,9 @@ Node* worst_fit(const char* name, Allocator* allocator, Boolean is_first_run) {
             add_to_list(allocator -> allocMBList, worst_fit, TRUE);
         }
         /* If an appropriate block is not found in freedMBList, then create a new block and add it to allocMBList */
-        else {          
+        else {
+            request = allocate_memory(allocator, name_size);
+            strcpy((char*)request, name);
             node = create_node(request, (char*)request + name_size - 1, name_size, (char*)request);
             add_to_list(allocator -> allocMBList, node, TRUE);            
         }
