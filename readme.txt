@@ -1,4 +1,5 @@
-The program takes 3 command line arguments. The first is the location of the dataset being used. 
+The program takes 3 command line arguments.
+The first is the location of the dataset being used. 
 The second is the memory allocation scheme being used. 
 The third is the location of the results output file.
 The command to run takes the following format:
@@ -25,3 +26,16 @@ To run best fit, enter:
 
 To run worst fit, enter:
     $ ./allocator first-names.txt wf results.txt
+
+
+Output files
+============
+
+The output for all algorithms on both datasets have been provided in the output directory.
+The output directory includes:
+1. ff_first-names_output (The first fit algorithm run on the first names dataset)
+2. bf_first-names_output (The best fit algorithm run on the first names dataset)
+3. wf_first-names_output (The worst fit algorithm run on the first names dataset)
+4. ff_middle-names_output (The first fit algorithm run on the middle names dataset)
+5. bf_middle-names_output (The best fit algorithm run on the middle names dataset)
+6. wf_middle-names_output (The worst fit algorithm run on the middle names dataset)
