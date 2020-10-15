@@ -1,3 +1,77 @@
+Submission file structure
+=========================
+
+This submission contains the following:
+
+├── output
+│   ├── ff_first-names_output
+│   ├── bf_first-names_output
+│   ├── wf_first-names_output
+│   ├── ff_middle-names_output
+|   ├── bf_middle-names_output
+|   ├── wf_middle-names_output
+├── src
+│   ├── allocator.c
+│   ├── allocator.h
+│   ├── linked_list.c
+│   ├── linked_list.h
+|   ├── utility.h
+├── Makefile
+├── readme.txt
+├── .gitignore
+
+Makefile
+--------
+Contains commands for code compilation.
+
+src/allocator.c
+---------------
+Contains the algorithms and main method.
+
+src/allocator.h
+---------------
+Contains Allocator struct definition and constants.
+
+src/linked_list.c
+-----------------
+Contains linked list helper methods like create list, create node, insert node, remove node.
+
+src/linked_list.h
+-----------------
+Contains List and Node struct definitions.
+
+src/utility.h
+-------------
+Contains helper constants and Boolean struct definition.
+
+ff_first-names_output 
+---------------------
+The results of the first fit algorithm run on the first names dataset
+
+bf_first-names_output
+---------------------
+The results of the best fit algorithm run on the first names dataset
+
+wf_first-names_output
+---------------------
+The results of the worst fit algorithm run on the first names dataset
+
+ff_middle-names_output
+----------------------
+The results of the first fit algorithm run on the middle names dataset
+
+bf_middle-names_output
+----------------------
+The results of the best fit algorithm run on the middle names dataset
+
+wf_middle-names_output
+----------------------
+The results of the worst fit algorithm run on the middle names dataset
+
+
+The program
+============
+
 The program takes 3 command line arguments.
 The first is the location of the dataset being used. 
 The second is the memory allocation scheme being used. 
